@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Установка Arch Linux</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrapper">
+    <h2 class="headtext">Установка Arch Linux в дуалбуте с Windows</h2>
+        <h2 class="subtitle">Начало установки, подключение к интернету</h2>
+        <div class="text">
+        iwctl 
+        station wlan0 connect wifi280d_5G
+        ctrl + c
+        </div>
+        <hr>
+        <h2 class="subtitle">Синхронизируем часы & время</h2>
+        <div class="text">
+        pacman -Sy archlinux-keyring
+        pacman-key --populate archlinux
+        pacman-key --init
+        
+        timedatectl set-ntp true
+        </div>
+        <hr>
+        <h2 class="subtitle">Разметка дисков, форматирование, Монтирование</h2>
+        <div class="text">
+        fdisk -l
+        fdisk /dev/sda 
+        
+        g 
+        
+        n 
+        (enter)
+        (enter)
+        +512M
+        
+        n
+        (enter)
+        (enter)
+        +30G
+        
+        n
+        (enter)
+        (enter)
+        -2G
+        
+        n
+        (enter)
+        (enter)
+        (enter)
+        
+        p
+        w
+        
+        lsblk
+        
+        Форматирование:
+        mkfs.fat -F32 /dev/sda1
+        mkfs.ext4 /dev/sda2
+        mkfs.ext4 /dev/sda3
+        mkswap /dev/sda4
+        
+        Монтирование
+        mount /dev/sda2 /mnt
+        mkdir /mnt/home/
+        mount /dev/sda3 /mnt/home/
+        swapon /dev/sda4 
+        </div>
+        <hr>
+        <h2 class="subtitle">Установка необходимых пакетов, генерация fstab файла, вход в /mnt.</h2>
+        <div class="text">
+        pacstrap /mnt base linux linux-firmware
+        nano
+
+        genfstab -U /mnt >> /mnt/etc/fstab
+
+        arch-chroot /mnt
+        </div>
+        <hr>
+        <h2 class="subtitle">Синхронизация времени, локали, файл hosts</h2>
+        <div class="text">
+        ln -sf /usr/share/zoneinfo/Europe/Moscow
+        /etc/localtime
+
+        hwclock --systohc
+        
+        nano /etc/locale.gen
+        Раскомментировать :
+        en_US.UTF-8 UTF-8
+        ru_RU.UTF-8 UTF-8
+        (ctrl+x + y + enter)
+        locale-gen
+        
+        nano /etc/hostname
+        arch
+        (ctrl+x + y + enter)
+        
+        nano /etc/hosts
+        127.0.0.1    localhost
+        ::1          localhost
+        127.0.1.1    arch.localdomain   arch
+        (ctrl+x + y + enter)
+        </div>
+        <hr>
+        <h2 class="subtitle">Установка пакетов, установка grub и dualboot</h2>
+        <div class="text">
+        mkinitcpio -P
+        
+        pacman -S grub base-devel efibootmgr
+        os-prober dosfstools dialog
+        networkmanager mtools 
+        nm-connection-editor pulseaudio
+        pavucontrol wireless_tools
+        
+        mkdir /boot/EFI
+        mount /dev/sda1 /boot/EFI
+
+        grub-install --target=x86_64-efi 
+        --bootloader-id=grub_uefi --recheck
+
+        grub-mkconfig -o /boot/grub/grub.cfg
+        os-prober
+        nano /etc/default/grub
+        Расскоментировать: 
+        GRUB_DISABLE_OS_PROBER=false
+        grub-mkconfig -o /boot/grub/grub.cfg
+        </div>
+        <hr>
+        <h2 class="subtitle">Включение сервиса NetworkManager, ставим пароли, драйвера на видео</h2>
+        <div class="text">
+        systemctl enable NetworkManager 
+        useradd -m -G wheel danya
+        EDITOR=nano visudo
+        Раскомментировать:
+        %wheel ALL=(ALL:ALL) ALL
+        (ctrl + x y enter)
+        passwd danya
+        (пароль)
+        (пароль)
+        passwd root
+        (пароль)
+        (пароль)
+        pacman -S xf86-video-amdgpu
+        </div>
+        <hr>
+        <h2 class="subtitle">Выходим из /mnt, перезагружаемся</h2>
+        <div class="text">
+        exit
+        umount -a
+        reboot
+        </div>
+        </h5>
+    </div>
+</div>
+</body>
+</html>
